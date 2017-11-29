@@ -32,6 +32,7 @@ def updateData(self):
 	global dos_check_time
 	global dos_result
 	global fuz_result
+	global ratio_threshold
 
 	df_data_dict[x] = df_with_data[(df_with_data.timestamp >= x) & (df_with_data.timestamp < x + time_interval)]
 	tmp_unique_id = df_data_dict[x].groupby(['id1']).count()
@@ -65,7 +66,7 @@ def updateData(self):
 	if len(tmp) != 0:
 		for i in range(len(unique_id)):
 			dpdp[i] = np.append(dpdp[i], len(tmp[tmp.id1 == unique_id[i]]) / len(tmp))
-			if dpdp[i][-1] > 0.1:
+			if dpdp[i][-1] > ratio_threshold:
 				p01[i].set_data(t, dpdp[i])#, label = unique_id[i])
 				if i == 0:
 					p01[i].set_label('0000')
@@ -97,7 +98,7 @@ def updateData(self):
 	tmp_dos = tmpid00
 	pre_tmp_dos = pre_tmpid00 
 	for i in range(len(unique_id)):
-		if dpdp[i][-1] > 0.1 and dos_state == 0:          
+		if dpdp[i][-1] > ratio_threshold and dos_state == 0:          
 			pre_tmp_dos_count_list = [0 for i in range(10)]
 			tmp_dos = tmp[tmp.id1 == unique_id[i]]
 			for j in range(2,12):
@@ -126,8 +127,11 @@ def updateData(self):
 	if fuz_state == 0 and dos_state == 0 and m_pac_list[check_pac_index] * dos_threshold < len(tmp_dos) and len(tmp_dos) > 2:
 		tmp_dos_time = tmp_dos.timestamp.values.tolist()
 		m_pac = int(math.floor(m_pac_list[check_pac_index]))
-		print(m_pac)
-		dos_st = tmp_dos_time[m_pac+1]
+		#print(m_pac)
+		if m_pac == 0:
+			dos_st = tmp_dos_time[0]
+		else:
+			dos_st = tmp_dos_time[m_pac+1]
 		dos_check_time = []
 		dos_check_time.append(x-time_interval)
 		dos_result.append(str(dos_st))
@@ -187,7 +191,7 @@ def updateData(self):
         
         
 
-start_time = 1479109900
+start_time = 1479113030
 
 font = {'size'   : 9}
 matplotlib.rc('font', **font)
@@ -255,6 +259,7 @@ dos_threshold = 2
 st_id_threshold = 1.3
 en_id_threshold = 1.1
 dos_check_time = []
+ratio_threshold = 0.15
 
 id_set = set([])
 tmp = df_with_data[(df_with_data.timestamp >= x) & (df_with_data.timestamp < x + time_interval)]
